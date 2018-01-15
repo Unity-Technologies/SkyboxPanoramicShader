@@ -42,13 +42,13 @@ namespace UnityEditor
                     EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.EndFadeGroup();
-
-                // No 3D settings unless PlayerSettings have VR support.
-                m_Show3DControl.value = PlayerSettings.virtualRealitySupported;
-                if (EditorGUILayout.BeginFadeGroup(m_Show3DControl.faded))
-                    ShowProp(materialEditor, FindProperty("_Layout", props));
-                EditorGUILayout.EndFadeGroup();
             }
+            EditorGUILayout.EndFadeGroup();
+
+            // No 3D settings unless PlayerSettings have VR support.
+            m_Show3DControl.value = PlayerSettings.virtualRealitySupported;
+            if (EditorGUILayout.BeginFadeGroup(m_Show3DControl.faded))
+                ShowProp(materialEditor, FindProperty("_Layout", props));
             EditorGUILayout.EndFadeGroup();
 
             // Let the default implementation add the extra shader properties at the bottom.
