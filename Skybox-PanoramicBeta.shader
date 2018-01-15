@@ -30,10 +30,10 @@ SubShader {
         half4 _Tint;
         half _Exposure;
         float _Rotation;
+        int _Layout;
 #ifndef _MAPPING_6_FRAMES_LAYOUT
         bool _MirrorOnBack;
         int _ImageType;
-        int _Layout;
 #endif
 
 #ifndef _MAPPING_6_FRAMES_LAYOUT
@@ -86,6 +86,7 @@ SubShader {
         struct v2f {
             float4 vertex : SV_POSITION;
             float3 texcoord : TEXCOORD0;
+            float4 layout3DScaleAndOffset : TEXCOORD6;
 #ifdef _MAPPING_6_FRAMES_LAYOUT
             float3 layout : TEXCOORD1;
             float4 edgeSize : TEXCOORD2;
@@ -94,7 +95,6 @@ SubShader {
             float4 faceZCoordLayouts : TEXCOORD5;
 #else
             float2 image180ScaleAndCutoff : TEXCOORD1;
-            float4 layout3DScaleAndOffset : TEXCOORD2;
 #endif
             UNITY_VERTEX_OUTPUT_STEREO
         };
@@ -167,6 +167,8 @@ SubShader {
                 o.image180ScaleAndCutoff = float2(1.0, 1.0);
             else  // 180 degree
                 o.image180ScaleAndCutoff = float2(2.0, _MirrorOnBack ? 1.0 : 0.5);
+#endif
+
             // Calculate constant scale and offset for 3D layouts
             if (_Layout == 0) // No 3D layout
                 o.layout3DScaleAndOffset = float4(0,0,1,1);
@@ -174,7 +176,7 @@ SubShader {
                 o.layout3DScaleAndOffset = float4(unity_StereoEyeIndex,0,0.5,1);
             else // Over-Under 3D layout
                 o.layout3DScaleAndOffset = float4(0, 1-unity_StereoEyeIndex,1,0.5);
-#endif
+
             return o;
         }
 
@@ -182,6 +184,7 @@ SubShader {
         {
 #ifdef _MAPPING_6_FRAMES_LAYOUT
             float2 tc = ToCubeCoords(i.texcoord, i.layout, i.edgeSize, i.faceXCoordLayouts, i.faceYCoordLayouts, i.faceZCoordLayouts);
+            tc = (tc + i.layout3DScaleAndOffset.xy) * i.layout3DScaleAndOffset.zw;
 #else
             float2 tc = ToRadialCoords(i.texcoord);
             if (tc.x > i.image180ScaleAndCutoff[1])
